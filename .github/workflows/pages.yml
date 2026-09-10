@@ -1,0 +1,100 @@
+name: Build and deploy site
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Required by actions/deploy-pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check lesson structure
+        run: python3 lint.py
+
+      - name: Build site
+        run: python3 build.py
+
+      - name: Assemble publishable tree
+        run: |
+          mkdir -p _site
+          cp -r index.html lessons assets _site/
+          # Without this, Pages runs the output through Jekyll.
+          touch _site/.nojekyll
+
+      - name: Check for broken links and external references
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, sys
+          root = pathlib.Path('_site')
+          pages = list(root.rglob('*.html'))
+          broken, external, anchors = [], set(), []
+          for f in pages:
+              h = f.read_text(encoding='utf-8')
+              ids = set(re.findall(r'id="([^"]+)"', h))
+              for m in re.finditer(r'(?:href|src)="([^"]+)"', h):
+                  u = m.group(1)
+                  if u.startswith(('http://', 'https://', '//')):
+                      external.add(u)
+                  elif u.startswith('#'):
+                      if u[1:] not in ids:
+                          anchors.append((f.name, u))
+                  elif not u.startswith(('data:', 'mailto:')):
+                      if not (f.parent / u.split('#')[0]).resolve().exists():
+                          broken.append((f.name, u))
+          print(f'{len(pages)} pages, {len(external)} external refs, '
+                f'{len(broken)} broken links, {len(anchors)} broken anchors')
+          for x in broken + anchors:
+              print('  ', x)
+          sys.exit(1 if broken or anchors else 0)
+          PY
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  examples:
+    name: Compile examples (GCC, Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GCC 14
+        run: sudo apt-get update && sudo apt-get install -y g++-14
+
+      - name: Build and run the standalone examples
+        run: make -C examples run CXX=g++-14
+
+      - name: Build and run the capstone
+        run: make -C examples/capstone run CXX=g++-14
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
