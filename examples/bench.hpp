@@ -45,7 +45,11 @@ template <std::size_t Buckets = 4096, std::uint64_t NsPerBucket = 8>
 class Histogram {
 public:
     void record(std::uint64_t ns) {
-        const std::size_t b = std::min<std::size_t>(ns / NsPerBucket, Buckets - 1);
+        const std::size_t raw = static_cast<std::size_t>(ns / NsPerBucket);
+        // A saturating top bucket makes every percentile above it read the same
+        // value. Count the saturations so that is visible rather than silent.
+        if (raw >= Buckets) ++overflow_;
+        const std::size_t b = std::min<std::size_t>(raw, Buckets - 1);
         ++counts_[b];
         ++total_;
         max_ = std::max(max_, ns);
@@ -62,20 +66,39 @@ public:
         return max_;
     }
 
+    // The bucket width is the resolution of every percentile below, so it is
+    // printed with them. A reported p50 of 0 means "under one bucket", not "free".
     void report(const char* label) const {
-        std::printf("%-28s n=%-9llu p50=%-7llu p99=%-7llu p99.9=%-7llu max=%llu  (ns)\n",
+        std::printf("%-28s n=%-9llu p50=%-7llu p99=%-7llu p99.9=%-7llu max=%-9llu"
+                    " [%llu ns buckets]\n",
                     label,
                     static_cast<unsigned long long>(total_),
                     static_cast<unsigned long long>(percentile(0.50)),
                     static_cast<unsigned long long>(percentile(0.99)),
                     static_cast<unsigned long long>(percentile(0.999)),
-                    static_cast<unsigned long long>(max_));
+                    static_cast<unsigned long long>(max_),
+                    static_cast<unsigned long long>(NsPerBucket));
+        if (overflow_ != 0) {
+            std::printf("%-28s WARNING: %llu of %llu samples exceeded %llu ns and "
+                        "saturated the top bucket.\n%-28s Percentiles above that point "
+                        "are floors, not measurements. Widen the buckets.\n",
+                        "", static_cast<unsigned long long>(overflow_),
+                        static_cast<unsigned long long>(total_),
+                        static_cast<unsigned long long>(Buckets * NsPerBucket), "");
+        }
     }
+
+    [[nodiscard]] static constexpr std::uint64_t resolution_ns() noexcept {
+        return NsPerBucket;
+    }
+
+    [[nodiscard]] std::uint64_t overflowed() const noexcept { return overflow_; }
 
 private:
     std::array<std::uint64_t, Buckets> counts_{};
     std::uint64_t total_ = 0;
     std::uint64_t max_ = 0;
+    std::uint64_t overflow_ = 0;
 };
 
 // Deterministic xorshift; std::mt19937 is far too slow for generating test data.

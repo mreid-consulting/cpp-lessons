@@ -168,6 +168,71 @@ double calibrate_tsc_per_ns() noexcept {
 On Linux you can cross-check against the kernel's own value: `dmesg | grep -i "tsc:.*MHz"`, or
 read `/sys/devices/system/cpu/cpu0/tsc_freq_khz` where the kernel exposes it.
 
+### What one tick is actually worth
+
+Calibration gives you a conversion factor. It also, read the other way round, gives you a
+floor, and that is the half people skip. One tick is the finest difference the counter can
+express, so any delta smaller than a few ticks is quantisation rather than signal.
+
+The number varies by more than an order of magnitude across machines you will meet:
+
+| Counter | Typical rate | One tick |
+|---|---|---|
+| `rdtsc`, x86-64 server | 2 to 3 GHz nominal | 0.3 to 0.5 ns |
+| `cntvct_el0`, Apple silicon | 24 MHz | 41.7 ns |
+| `cntvct_el0`, some ARM servers | 50 to 100 MHz | 10 to 20 ns |
+| `clock_gettime` via vDSO | ~20 to 25 ns per call | its own cost |
+
+On x86-64 a tick is a fraction of a nanosecond and you can time a single pipeline stage.
+On Apple silicon a tick is 41.7 ns, which is longer than an entire decode stage, so the
+same instrumentation reports most stages as zero. That is not a fast pipeline, it is an
+unusable ruler.
+
+Measure it rather than assuming it. The smallest non-zero gap between two back-to-back
+reads is the counter's practical granularity:
+
+```cpp tick_resolution.cpp
+#include <algorithm>
+#include <cstdint>
+#include <cstdio>
+#include <limits>
+
+// From tsc.hpp above; reads cntvct_el0 rather than rdtsc on ARM.
+std::uint64_t tsc_raw() noexcept;
+
+// Two reads back to back differ by either zero or one step of the counter.
+// The smallest non-zero difference is the step.
+std::uint64_t tick_granularity(int samples = 10'000) noexcept {
+    std::uint64_t best = std::numeric_limits<std::uint64_t>::max();
+    for (int i = 0; i < samples; ++i) {
+        const std::uint64_t a = tsc_raw();
+        const std::uint64_t b = tsc_raw();
+        if (b > a) best = std::min(best, b - a);
+    }
+    return best == std::numeric_limits<std::uint64_t>::max() ? 0 : best;
+}
+
+void report_resolution(double tsc_per_ns) noexcept {
+    const double ns_per_tick = 1.0 / tsc_per_ns;
+    const std::uint64_t step = tick_granularity();
+    std::printf("counter %.1f MHz, %.3f ns/tick, step %llu ticks = %.1f ns\n",
+                tsc_per_ns * 1000.0, ns_per_tick,
+                static_cast<unsigned long long>(step),
+                static_cast<double>(step) * ns_per_tick);
+}
+```
+
+Print that line at startup, next to the histogram, in anything that reports timings. It
+costs one line of output and it is the difference between a reader trusting your numbers
+and a reader being misled by them.
+
+:::warn
+A measured median of zero never means free. It means below the resolution of the
+instrument. The same is true of a histogram whose first bucket is narrower than a tick:
+every sample lands in it and the distribution looks impossibly tight. Size the bucket
+width to at least a few ticks, and say in the output what the tick is.
+:::
+
 ## Recording samples without perturbing them
 
 The measurement must not do anything the hot path is forbidden to do. That rules out
