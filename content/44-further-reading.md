@@ -67,6 +67,13 @@ discarded the boring nine tenths. All of these are on YouTube; titles are approx
 | `clang-tidy` | **[start]** | Static checks that actually pay: the `performance-*`, `bugprone-*` and `cppcoreguidelines-*` sets. Run it in CI, not on your desk. |
 | Valgrind `cachegrind` and `callgrind` | **[deep]** | Simulated cache and call statistics: deterministic, repeatable and roughly fifty times slower than the real thing. Use it to compare two implementations' miss counts, never to measure time. |
 | `uica` (uops.info) and `llvm-mca` | **[deep]** | Static throughput analysis of a single basic block. They tell you the port pressure and the loop-carried bottleneck without running anything. Lesson 25. |
+| Clang XRay | **[deep]** | Compile-time instrumentation sleds you patch on at run time, so one binary is both the fast one and the traced one. The flight-data-recorder mode is the one that catches tail events. Lesson 28a. |
+| `magic-trace` | **[deep]** | Snapshot the last few milliseconds of instruction-level history when a trigger fires, using Intel Processor Trace. The most direct answer to an unexplained p99.9. Lesson 28a. |
+| `bpftrace` and the BCC tools | **[start]** | Kernel-side instrumentation you can attach to a running production process. Excellent for syscalls, scheduling and off-CPU time; blind to your user-space hot loop. Lesson 28a. |
+| Tracy | **[start]** | Real-time frame profiler with manually placed zones. Built for games, but a replay harness has the same shape. |
+| Coz | **[deep]** | Causal profiling: it tells you what speeding up a given line would actually do to end-to-end time, which is not what a flat profile tells you. |
+| `mold` and `lld` | **[start]** | Fast linkers. They buy build time rather than run time, with identical code folding as the exception. Lesson 29a. |
+| tcmalloc, jemalloc, mimalloc | **[start]** | Drop-in allocators. The gain is in the multithreaded tail, not the mean, and it costs one link flag. Lesson 29a. |
 
 ```sh The five commands that answer most questions
 $ perf stat -e cycles,instructions,branches,branch-misses,cache-misses ./trader
@@ -148,6 +155,15 @@ title given in the talks table.
 | BOLT | `https://github.com/llvm/llvm-project/tree/main/bolt` |
 | hwloc and lstopo | `https://www.open-mpi.org/projects/hwloc/` |
 | llvm-mca | `https://llvm.org/docs/CommandGuide/llvm-mca.html` |
+| Clang XRay documentation | `https://llvm.org/docs/XRay.html` |
+| magic-trace | `https://github.com/janestreet/magic-trace` |
+| Perfetto trace viewer | `https://ui.perfetto.dev` |
+| bpftrace | `https://github.com/bpftrace/bpftrace` |
+| Tracy profiler | `https://github.com/wolfpld/tracy` |
+| Coz causal profiler | `https://github.com/plasma-umass/coz` |
+| mold linker | `https://github.com/rui314/mold` |
+| mimalloc | `https://github.com/microsoft/mimalloc` |
+| jemalloc | `https://jemalloc.net` |
 
 :::note
 Addresses are written as text rather than as links so that a printed copy of this page

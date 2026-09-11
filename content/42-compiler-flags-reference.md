@@ -204,6 +204,36 @@ within one statement), and `off` gives bit-reproducible results across compilers
 also offers `-ffp-model=precise|strict|fast` as a single dial. On a trading hot path most
 of this is moot, because prices are integer ticks and not doubles at all (lesson 40).
 
+## Instrumentation for profiling and tracing
+
+These change what the binary can tell you about itself. Lesson 28a covers how to use the
+output; this is the flag lookup.
+
+| Flag | Compiler | Effect |
+|---|---|---|
+| `-g` | both | Debug info. No run-time cost. There is no good reason to ship without it. |
+| `-fno-omit-frame-pointer` | both | Keeps a walkable stack. Costs a register and a little speed, and it is what makes production profiling possible. |
+| `-fxray-instrument` | Clang | Patchable nop sleds at function entry and exit, inert until turned on at run time. |
+| `-fxray-instruction-threshold=N` | Clang | Only instrument functions of at least N instructions. Without it you instrument every accessor. |
+| `-finstrument-functions` | both | Calls `__cyg_profile_func_enter`/`_exit` around every function. Always on and far heavier than XRay; what `uftrace` builds on. |
+| `-finstrument-functions-exclude-file-list=` | both | Narrows the above, which it badly needs. |
+| `-pg` | both | gprof instrumentation. Largely superseded by sampling profilers. |
+| `-fprofile-generate` / `-fprofile-use` | both | PGO instrumentation and consumption. Lessons 29 and 29a. |
+| `-fprofile-partial-training` | GCC | Do not pessimise code the profile never exercised. |
+| `-fsanitize-coverage=trace-pc-guard` | both | Coverage callbacks, the basis of fuzzing instrumentation. |
+
+```sh Clang XRay: build once, decide later whether to record
+$ clang++ -std=c++23 -O2 -g -fxray-instrument -fxray-instruction-threshold=64       main.cpp -o trader
+$ XRAY_OPTIONS="patch_premain=true xray_mode=xray-basic" ./trader
+$ llvm-xray account xray-log.trader.* --sort=sum --top=20 --format=text
+```
+
+:::warn
+`-finstrument-functions` and `-pg` are unconditional: every call pays, in every build,
+including the one you benchmark. XRay's sleds are `nop`s until patched, which is the whole
+reason it is deployable and they are not. Do not reach for the old flags out of habit.
+:::
+
 ## Asking the compiler what it did
 
 Never assume a loop vectorised or a function inlined. Ask.

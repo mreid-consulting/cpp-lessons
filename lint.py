@@ -19,6 +19,19 @@ REQUIRED = {"title", "part", "summary", "time", "level"}
 ADM_KINDS = {"note", "key", "warn", "pitfall", "hft", "perf", "exercise", "asm"}
 
 
+KNOWN_IDS: set[str] = set()
+
+
+def collect_ids() -> None:
+    """Lesson ids as they appear in filenames, e.g. '07' and '23a', plus the
+    unpadded forms authors actually write in prose, e.g. '7'."""
+    for f in CONTENT.glob("*.md"):
+        m = re.match(r"^(\d+)([a-z]?)-", f.name)
+        if m:
+            KNOWN_IDS.add((m.group(1) + m.group(2)).lower())
+            KNOWN_IDS.add((m.group(1).lstrip("0") + m.group(2)).lower())
+
+
 def check(path: Path) -> list[str]:
     problems: list[str] = []
     raw = path.read_text(encoding="utf-8")
@@ -97,16 +110,19 @@ def check(path: Path) -> list[str]:
     if words < 600:
         problems.append(f"only ~{words} words of prose")
 
-    for m in re.finditer(r"\blesson (\d+)\b", body, re.I):
-        n = int(m.group(1))
-        if not 1 <= n <= 44:
-            problems.append(f"cross-reference to nonexistent lesson {n}")
+    for m in re.finditer(r"\blesson (\d+[a-z]?)\b", body, re.I):
+        ref = m.group(1).lower()
+        # A bare number matches a suffixed lesson too: "lesson 23" is a fine way
+        # to refer to 23 even in a corpus that also has 23a.
+        if ref not in KNOWN_IDS:
+            problems.append(f"cross-reference to nonexistent lesson {ref}")
 
     return problems
 
 
 def main() -> None:
     files = sorted(CONTENT.glob("*.md"))
+    collect_ids()
     total = 0
     for path in files:
         problems = check(path)

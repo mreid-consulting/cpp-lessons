@@ -279,6 +279,23 @@ and check whether the hot function is the one you expected. The gap between your
 prediction and the counters is the thing worth remembering.
 :::
 
+## Where sampling stops
+
+Everything in this lesson is a sampling profiler, and sampling has a boundary worth naming
+before you walk into it. A profile is a statistical answer to "where do the cycles go",
+built from an interrupt every few thousand events. That is the right tool for finding the
+function your hot path spends its time in, and it is structurally incapable of explaining a
+tail event.
+
+At a 4 kHz sampling rate you get one sample every 250 microseconds. An event that happens
+once in ten million messages and costs you 300 microseconds contributes roughly one sample
+to a profile containing millions of them. It is indistinguishable from noise, and it is the
+event you are being paid to eliminate.
+
+Lesson 28a covers the other half: instrumentation with Clang XRay, hardware tracing with
+Intel Processor Trace, and the always-on ring tracer that most desks end up writing. Use a
+profiler to find the hot path, and a tracer to explain the slow occasion.
+
 ## Takeaways
 
 - Run `perf stat` first. IPC, branch miss rate and LLC miss rate usually name the problem

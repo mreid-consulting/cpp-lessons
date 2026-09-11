@@ -19,6 +19,7 @@ $ make run
 | `spsc.hpp` | the wait-free queue from lesson 33 | 33 |
 | `feed.hpp` | synthetic feed generator, startup only | 36 |
 | `main.cpp` | the loop, warmup, instrumentation, cold logging thread | 26, 39 |
+| `trace_demo.cpp` | five-stage ring tracing, then which stage was slow on the worst messages | 28a |
 
 ## What it does
 
@@ -45,6 +46,28 @@ what lessons 26 and 30 exist to remove.
 It has no network, no session management, no gap recovery, no multi-symbol sharding, no
 persistence and no failover. Fills are simulated by a counter, not consumed from an
 execution report. It is a shape to measure and optimise against, not a trading system.
+
+## Tracing the tail
+
+`trace_demo` is lesson 28a's exercise, done. It puts a trace point at five stage
+boundaries, replays the feed, then reassembles each message's journey and prints the stage
+breakdown for the ten slowest.
+
+```sh
+$ make trace_demo && ./trace_demo
+$ make clean && make trace_demo TRACE=0 && ./trace_demo   # tracer compiled out
+```
+
+The second build is the honest cost. On an unpinned laptop the traced run is around
+41 ns per message and the untraced run around 19, so five trace points cost roughly 22 ns
+in total. That is the price of knowing what happened, and it is why the pattern is
+always-on rather than switched on after an incident.
+
+Read the `worst stage` column. If the same stage is slow every time you have a code
+problem. If it varies, as it does on an untuned machine, you have a scheduling problem and
+lesson 30 is where to go. A sampling profiler cannot answer this at all: these messages are
+roughly one in a hundred thousand, and a 4 kHz profiler takes one sample per 250
+microseconds.
 
 ## Exercises
 

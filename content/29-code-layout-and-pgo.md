@@ -292,6 +292,16 @@ find how many bytes moved from `.text` into `.text.unlikely`. Predict the orderi
 three miss counts before you run them.
 :::
 
+## Where this sits among the other build-level wins
+
+Profile-guided optimisation and BOLT are the two most valuable things you can do to a
+binary without editing it, which is why they get a lesson of their own. They are not the
+only ones, and they are not the first ones: link-time optimisation, a correctly pinned
+`-march`, hidden symbol visibility and a better allocator are all cheaper, and two of them
+are a single flag. Lesson 29a ranks the whole set by payoff against effort, and says what
+each is typically worth, so you can work down the list rather than reaching for the most
+sophisticated tool first.
+
 ## Takeaways
 
 - Instructions compete for cache and TLB exactly like data: a typical core gives you 32 KB

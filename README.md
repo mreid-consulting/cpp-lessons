@@ -68,9 +68,10 @@ $ cd examples && make run
 | `cache_effects` | array-of-structs vs struct-of-arrays, pointer chasing, false sharing |
 | `spsc_demo` | inter-core handoff latency and streaming throughput of the wait-free queue |
 | `alloc_guard_demo` | fixed-capacity containers, an arena, a handle pool, and an `operator new` that aborts |
+| `capstone/trace_demo` | always-on ring tracing, and which pipeline stage was slow on the worst messages |
 
-The headers `spsc_queue.hpp` and `static_vector.hpp` are the reference implementations
-from lessons 33 and 24 and are meant to be copied.
+The headers `spsc_queue.hpp`, `static_vector.hpp` and `trace_ring.hpp` are the reference
+implementations from lessons 33, 24 and 28a, and are meant to be copied.
 
 `examples/capstone/` holds the tick-to-trade skeleton from lesson 41: a decoder, a
 price-ladder order book, a micro-price strategy, a pre-trade risk gate, and a synthetic

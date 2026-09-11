@@ -445,6 +445,9 @@ def build_index(lessons: list[Lesson]) -> str:
     start at lesson 19. Part III is the core of the series.</li>
     <li><b>Already writing hot paths.</b> Lessons 24, 26, 32, 33 and 39 are the ones that
     change how a system is built. Lesson 43 is a review checklist you can use tomorrow.</li>
+    <li><b>Chasing a tail you cannot explain.</b> Lesson 28a for tracing, since a sampling
+    profiler structurally cannot see a one-in-a-million event, then lesson 29a for the
+    build-level wins that cost an afternoon and no design change.</li>
   </ul>
 </section>
 <h2 class="curriculum-h" id="curriculum">Curriculum</h2>

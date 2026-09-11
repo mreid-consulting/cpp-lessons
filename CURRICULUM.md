@@ -41,7 +41,9 @@ what follows. `build.py` sorts on the number then the suffix.
 26 measuring-latency             | Measuring Latency Honestly            | advanced | 35 min
 27 microbenchmarking             | Microbenchmarking Without Lying       | advanced | 30 min
 28 profiling-with-perf           | Profiling: perf, Counters, Top-Down   | advanced | 35 min
+28a tracing-and-instrumentation  | Tracing: XRay, Processor Trace, Friends| expert | 40 min
 29 code-layout-and-pgo           | Code Layout, iCache, PGO and BOLT     | expert | 30 min
+29a cheap-build-wins             | Cheap Wins from the Build             | advanced | 35 min
 30 os-and-hardware-tuning        | Taming the OS and the Hardware        | expert | 35 min
 
 ## Part V - Concurrency

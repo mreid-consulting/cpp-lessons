@@ -25,18 +25,26 @@ endif
 
 CXXFLAGS := $(STD) $(WARN) $(OPT) $(ARCH) $(SYSINC)
 HEADERS  := types.hpp spsc.hpp book.hpp decoder.hpp strategy.hpp risk.hpp \
-            feed.hpp ../bench.hpp ../spsc_queue.hpp
+            feed.hpp ../bench.hpp ../spsc_queue.hpp ../trace_ring.hpp
+
+# Set TRACE=0 to compile the ring tracer out and measure what it cost.
+TRACE    ?= 1
 
 trader: main.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) main.cpp -o trader $(LDFLAGS)
 
-run: trader
+trace_demo: trace_demo.cpp $(HEADERS)
+	$(CXX) $(CXXFLAGS) -DHFT_TRACE=$(TRACE) trace_demo.cpp -o trace_demo $(LDFLAGS)
+
+run: trader trace_demo
 	./trader
+	@echo
+	./trace_demo
 
 asm: main.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -S -masm=intel -o trader.s main.cpp
 
 clean:
-	rm -f trader trader.s
+	rm -f trader trace_demo trader.s
 
 .PHONY: run asm clean
