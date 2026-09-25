@@ -277,7 +277,9 @@ ways on one laptop:
 | Compiled binary, `-O0` | 5.7 to 7.1 |
 
 Figures are the range over three runs on an Apple M-series laptop with LLVM 21. The
-absolute values will differ on your machine; the ratios are the point.
+absolute values will differ on your machine; the ratios are the point. The same two
+split-versus-single-input sessions on an x86-64 Linux server with LLVM 18 measured 0.31 and
+0.96 ns per element, a 3.1x penalty against 3.7x here.
 
 Three things follow. The session's default is an unoptimised build, roughly ten times
 slower than production, so an untuned session tells you nothing about speed. With `-O2` and
