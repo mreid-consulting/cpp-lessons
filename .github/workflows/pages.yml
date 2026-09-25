@@ -87,6 +87,18 @@ jobs:
       - name: Build and run the capstone
         run: make -C examples/capstone run CXX=g++-14
 
+  repl:
+    name: Replay interactive sessions (clang-repl, Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-repl
+        run: sudo apt-get update && sudo apt-get install -y clang-18 clang-tools-18
+
+      - name: Replay every session from lesson 01a and check its results
+        run: CHECK=1 CLANG_REPL=clang-repl-18 examples/repl/run.sh
+
   deploy:
     name: Deploy to Pages
     needs: build

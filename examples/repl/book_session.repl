@@ -1,0 +1,12 @@
+#include "book.hpp"
+#include <cstdio>
+#include <memory>
+auto book = std::make_unique<hft::Book>(hft::Price{100'000});
+book->on_add({1, hft::Price{99'998}, 300, hft::Side::Buy});
+book->on_add({2, hft::Price{99'999}, 100, hft::Side::Buy});
+book->on_add({3, hft::Price{100'002}, 250, hft::Side::Sell});
+std::printf("bid %lld x %u   ask %lld x %u   spread %lld\n", (long long)book->best_bid().v, book->bid_qty(), (long long)book->best_ask().v, book->ask_qty(), (long long)book->spread());
+book->on_reduce(2, 0);
+std::printf("after cancel: bid %lld x %u   spread %lld\n", (long long)book->best_bid().v, book->bid_qty(), (long long)book->spread());
+std::printf("sizeof(Book) %zu\n", sizeof(hft::Book));
+%quit

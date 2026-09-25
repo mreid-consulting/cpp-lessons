@@ -237,6 +237,15 @@ Build `order.cpp` twice, once at `-O0` and once at `-O2`, and diff the assembly 
 should find a single `imul` and a `ret`.
 :::
 
+## The other way to run C++
+
+Everything above assumes the whole-program model: compile translation units, link, run from
+`main`. That model is right for building systems. For asking a quick question about a type,
+a packet or a formula, lesson 01a introduces the alternative: an incremental session that
+compiles each input as you type it and keeps the process alive between them. It also turns
+out to be the clearest possible demonstration of the translation unit boundary from this
+lesson, because in a session every input is its own translation unit.
+
 ## Takeaways
 
 - The **translation unit** is the compiler's field of view. Optimisation stops at its edge.

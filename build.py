@@ -130,6 +130,9 @@ def highlight_shell(code: str) -> str:
 
 HIGHLIGHTERS = {
     "cpp": highlight_cpp, "c++": highlight_cpp, "c": highlight_cpp,
+    # Input typed into an interactive session: C++ syntax, but top-level statements
+    # and %commands, so it is highlighted as C++ and never compile-checked as a file.
+    "repl": highlight_cpp,
     "sh": highlight_shell, "bash": highlight_shell, "asm": highlight_plain,
 }
 
@@ -440,7 +443,9 @@ def build_index(lessons: list[Lesson]) -> str:
   <h3>Where to start</h3>
   <ul class="tracks">
     <li><b>New to C++.</b> Lessons 01 to 18 in order. Do not skip ahead to Part III:
-    the optimisation material assumes you can read the code it optimises.</li>
+    the optimisation material assumes you can read the code it optimises. Set up the
+    interactive session from lesson 01a early; it makes every later lesson faster to
+    explore.</li>
     <li><b>Fluent in C++, new to latency.</b> Skim Part II for the C++23 additions, then
     start at lesson 19. Part III is the core of the series.</li>
     <li><b>Already writing hot paths.</b> Lessons 24, 26, 32, 33 and 39 are the ones that

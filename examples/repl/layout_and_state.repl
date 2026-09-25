@@ -1,0 +1,27 @@
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+struct Quote { std::int64_t px; std::uint32_t qty; std::uint8_t side; };
+std::printf("Quote: size %zu, align %zu, qty@%zu, side@%zu\n", sizeof(Quote), alignof(Quote), offsetof(Quote, qty), offsetof(Quote, side));
+std::int64_t position = 0;
+void on_fill(std::int64_t signed_qty) { position += signed_qty; std::printf("position %lld\n", (long long)position); }
+on_fill(100);
+on_fill(-40);
+std::int64_t position = 0;
+position = 0;
+on_fill(5);
+namespace v1 { \
+std::int64_t round_to_tick(std::int64_t px, std::int64_t tick) { return px / tick * tick; } \
+}
+namespace v2 { \
+std::int64_t round_to_tick(std::int64_t px, std::int64_t tick) { \
+    const std::int64_t q = px / tick, r = px % tick; \
+    return (r < 0 ? q - 1 : q) * tick; \
+} \
+}
+std::printf("round_to_tick(-7, 5):  v1 %lld   v2 %lld\n", (long long)v1::round_to_tick(-7, 5), (long long)v2::round_to_tick(-7, 5));
+int levels = 10;
+%undo
+int levels = 32;
+std::printf("levels %d\n", levels);
+%quit

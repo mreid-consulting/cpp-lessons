@@ -7,6 +7,7 @@ what follows. `build.py` sorts on the number then the suffix.
 
 ## Part I - Foundations
 01 how-a-cpp-program-is-built    | How a C++ Program Is Built            | beginner | 25 min
+01a interactive-cpp              | Interactive C++: A REPL for Asking Questions | beginner | 30 min
 02 types-and-representation      | Types, Bits and Representation        | beginner | 30 min
 03 functions-references-const    | Functions, References and const       | beginner | 25 min
 04 what-a-class-is               | What a Class Really Is                | beginner | 35 min

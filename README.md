@@ -2,7 +2,7 @@
 
 **Read it: <https://mreid-consulting.github.io/cpp-lessons/>**
 
-A 45-lesson lecture series that starts at "what is a class" and ends at a compilable
+A 48-lesson lecture series that starts at "what is a class" and ends at a compilable
 tick-to-trade skeleton. Static HTML, no dependencies, no network access required.
 
 Part I covers the language from zero. Parts II and III cover C++23 and the machine:
@@ -69,6 +69,7 @@ $ cd examples && make run
 | `spsc_demo` | inter-core handoff latency and streaming throughput of the wait-free queue |
 | `alloc_guard_demo` | fixed-capacity containers, an arena, a handle pool, and an `operator new` that aborts |
 | `capstone/trace_demo` | always-on ring tracing, and which pipeline stage was slow on the worst messages |
+| `repl/run.sh` | replays every interactive session from lesson 01a, including the inlining cost of splitting code across inputs |
 
 The headers `spsc_queue.hpp`, `static_vector.hpp` and `trace_ring.hpp` are the reference
 implementations from lessons 33, 24 and 28a, and are meant to be copied.

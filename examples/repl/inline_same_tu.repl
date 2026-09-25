@@ -1,0 +1,3 @@
+#include "notional.hpp"
+run();
+%quit

@@ -1,0 +1,6 @@
+#include <cstdint>
+#include <cstdio>
+%lib ./librisk.so
+extern "C" bool within_band(std::int64_t px, std::int64_t ref, std::int64_t band);
+std::printf("within_band: %d %d\n", within_band(100500, 100000, 500), within_band(100501, 100000, 500));
+%quit
